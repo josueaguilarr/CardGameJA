@@ -1,86 +1,82 @@
-var btn1 = document.getElementById('newgrid');
-btn1.addEventListener('click', newGrid);
+let existBoard = false;
+let message = document.getElementById("message");
+let containerCards = document.getElementById("containerCards");
+let initialRandomNumberToFind = Math.floor(Math.random() * 10);
+document.getElementById("number").textContent = initialRandomNumberToFind;
 
-var btn2 = document.getElementById('deletegrid');
-btn2.addEventListener('click', deleteGrid);
+const createPositions = () => {
+  let numbersOccupied = [];
+  for (let i = 0; i < 9; i++) {
+    generateRandomNumber(numbersOccupied);
+  }
 
-var divpadre = document.getElementById('padre');
-divpadre.classList.add('divpadre', 'bgcard');
+  existBoard === false
+    ? (createBoard(numbersOccupied), (existBoard = true))
+    : "";
+};
 
-var divmsj = document.getElementById('msj');
-divmsj.classList.add('container', 'fs-5');
+const generateRandomNumber = (arr) => {
+  let randomNumber = Math.floor(Math.random() * 10);
+  validateNumber(randomNumber, arr);
+};
 
-var num = document.getElementById('numero');
+const validateNumber = (number, arr) =>
+  arr.includes(number) ? generateRandomNumber(arr) : arr.push(number);
 
-var numeros = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-var vidas = 3;
-var intento = 0;
-var posicion = 0;
-var limite = false;
+const createBoard = (arrNumbers) => {
+  for (let i = 0; i < arrNumbers.length; i++) {
+    let currentImage = document.createElement("img");
+    currentImage.setAttribute("src", "img/signo.png");
+    currentImage.id = arrNumbers[i];
+    currentImage.classList.add("_card-item");
+    containerCards.appendChild(currentImage);
+  }
 
-function newGrid() {
-    var busqueda;
-    var img1 = document.createElement('img');
-    busqueda = Math.floor(Math.random() * ((9 + 1) - 1) + 1);
-    img1.setAttribute("src", "img/" + busqueda + ".png");
-    img1.id = 'busqueda';
-    img1.height = '120';
-    num.appendChild(img1);
-    for (let i = 0; i < 9; i++) {
-        numeros[i] = Math.floor(Math.random() * ((9 + 1) - 1) + 1);
-        for (var j = 0; j < i; j++) {
-            if (numeros[i] == numeros[j]) {
-                i--;
-            }
-        }
-    }
+  changeImageSelected();
+};
 
-    for (var i = 0; i < 9; i++) {
-        var br = document.createElement('br');
-        var div = document.createElement('div');
-        div.id = 'div' + posicion;
-        div.classList.add('bgitem');
-        var img2 = document.createElement('img');
-        img2.setAttribute("src", "img/signo.png");
-        img2.height = '120';
-        img2.id = 'img' + posicion;
-        div.appendChild(img2);
-        divpadre.appendChild(div);
-        posicion = posicion + 1;
-    }
+const changeImageSelected = () => {
+  let lifes = 3;
 
-    for (var i = 0; i < 9; i++) {
-        const img3 = document.getElementById('img' + i);
-        img3.img1 = numeros[i];
-        img3.addEventListener('click', function() {
-            if (limite == false) {
-                img3.src = 'img/' + img3.img1 + '.png';
-                if (img3.img1 == busqueda) {
-                    divmsj.textContent = 'Felicidades encontraste el número ' + img3.img1 + ' :)';
-                    limite = true;
-                } else {
-                    vidas--;
-                    divmsj.textContent = 'Oops! Te quedan ' + vidas + ' vidas';
-                }
-                if (vidas == 0) {
-                    divmsj.textContent = 'Te quedaste sin vidas, reinicia :(';
-                    limite = true;
-                }
-            }
-        })
-    }
-}
+  document.querySelectorAll("._card-item").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      if (lifes > 0) {
+        const id = e.target.getAttribute("id");
+        const cardSelected = document.getElementById(id);
+        cardSelected.classList.add('_transform-card');
+        cardSelected.setAttribute("src", "img/" + id + ".png");
+        lifes--;
+        id == initialRandomNumberToFind
+          ? ((message.textContent = "Encontraste el número :)"),
+            (lifes = 0),
+            animationToWin())
+          : (message.textContent = "Te quedan " + lifes + " vidas :(");
+      }
+    });
+  });
+};
 
-function deleteGrid() {
-    while (divpadre.firstElementChild) {
-        divpadre.removeChild(divpadre.firstElementChild);
-        limite = false;
-        intentos = 0;
-    }
-    while (num.firstElementChild) {
-        num.removeChild(num.firstElementChild);
-    }
-    posicion = 0;
-    divmsj.textContent = '';
-    vidas = 3;
-}
+const animationToWin = () => {
+  let canvasConfetti = document.getElementById("canvas-confetti");
+
+  let myConfetti = confetti.create(canvasConfetti, {
+    resize: false,
+    useWorker: true,
+  });
+  myConfetti({
+    particleCount: 300,
+    spread: 150,
+    startVelocity: 20,
+  });
+};
+
+const deletePositions = () => {
+  while (containerCards.firstElementChild) {
+    containerCards.removeChild(containerCards.firstElementChild);
+  }
+  message.textContent = "";
+  let generateRandomNumberToFind = Math.floor(Math.random() * 10);
+  initialRandomNumberToFind = generateRandomNumberToFind;
+  document.getElementById("number").textContent = initialRandomNumberToFind;
+  existBoard = false;
+};
